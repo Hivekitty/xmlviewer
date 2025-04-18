@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MyAnimeList XML Viewer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f6fa;
+      --card: #ffffff;
+      --text: #333;
+      --accent: #2e51a2;
+      --border: #ddd;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 40px 20px;
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--accent);
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+    }
+
+    input[type="file"] {
+      display: block;
+      margin: 0 auto 30px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .user-info {
+      background: #eaf0ff;
+      padding: 15px 20px;
+      border-left: 6px solid var(--accent);
+      border-radius: 8px;
+      margin-bottom: 30px;
+      font-size: 1rem;
+    }
+
+    .group {
+      margin-bottom: 50px;
+    }
+
+    .group h2 {
+      font-size: 1.6rem;
+      color: #222;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 5px;
+    }
+
+    .anime-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .anime {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      word-wrap: break-word;
+    }
+
+    .anime:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px rgba(0,0,0,0.1);
+    }
+
+    .anime-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .anime p {
+      margin: 6px 0;
+      color: #555;
+    }
+
+    .label {
+      font-weight: 600;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎥 MyAnimeList XML Viewer</h1>
+    <input type="file" id="fileInput" accept=".xml" />
+    <div class="user-info" id="user-info"></div>
+    <div id="anime-groups"></div>
+  </div>
+
+  <script>
+    document.getElementById("fileInput").addEventListener("change", function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const xmlContent = e.target.result;
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(xmlContent, "application/xml");
+
+        const userExportType = xml.querySelector("user_export_type")?.textContent || "N/A";
+        document.getElementById("user-info").innerHTML = `
+          <p><span class="label">Export Type:</span> ${userExportType}</p>
+        `;
+
+        const animes = xml.querySelectorAll("anime");
+        const groups = {};
+
+        animes.forEach(anime => {
+          const update = anime.querySelector("update_on_import")?.textContent ?? "0";
+          if (update !== "1") return;
+
+          const status = anime.querySelector("my_status")?.textContent ?? "Unknown";
+          const title = anime.querySelector("series_title")?.textContent ?? "Untitled";
+          const id = anime.querySelector("series_animedb_id")?.textContent ?? "N/A";
+
+          const animeData = { title, id, update };
+
+          if (!groups[status]) groups[status] = [];
+          groups[status].push(animeData);
+        });
+
+        const container = document.getElementById("anime-groups");
+        container.innerHTML = "";
+
+        for (const status in groups) {
+          const groupDiv = document.createElement("div");
+          groupDiv.classList.add("group");
+
+          const title = document.createElement("h2");
+          title.textContent = status;
+          groupDiv.appendChild(title);
+
+          const grid = document.createElement("div");
+          grid.classList.add("anime-grid");
+
+          groups[status].forEach(anime => {
+            const card = document.createElement("div");
+            card.classList.add("anime");
+            card.innerHTML = `
+              <div class="anime-title">${anime.title}</div>
+              <p><span class="label">AnimeDB ID:</span> ${anime.id}</p>
+              <p><span class="label">Update on Import:</span> ${anime.update}</p>
+            `;
+            grid.appendChild(card);
+          });
+
+          groupDiv.appendChild(grid);
+          container.appendChild(groupDiv);
+        }
+      };
+      reader.readAsText(file);
+    });
+  </script>
+</body>
+</html>
