@@ -11,15 +11,14 @@ A lightweight, browser-based tool to visualize your exported MyAnimeList (MAL) a
 - Shows AnimeDB ID, title, and a corresponding image (if available in `images/` folder).
 
 ## 📂 Folder Structure
-
+```
 project/
 │
 ├── index.html # Main HTML file (includes inline CSS and JavaScript)
 ├── images/
 │ └── anime_<id>.jpg # Optional folder containing anime cover images
 └── README.md # Project documentation (this file)
-
-
+```
 > 💡 Anime images are expected to follow the naming format: `anime_<id>.jpg` (where `<id>` is the AnimeDB ID).
 
 ## 🚀 How to Use
