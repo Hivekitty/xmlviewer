@@ -101,6 +101,13 @@
       font-weight: 600;
       color: #444;
     }
+
+    .anime img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
   </style>
 </head>
 <body>
@@ -162,6 +169,7 @@
             const card = document.createElement("div");
             card.classList.add("anime");
             card.innerHTML = `
+              <img src="images/anime_${anime.id}.jpg" alt="${anime.title}" onerror="this.style.display='none';" />
               <div class="anime-title">${anime.title}</div>
               <p><span class="label">AnimeDB ID:</span> ${anime.id}</p>
               <p><span class="label">Update on Import:</span> ${anime.update}</p>
